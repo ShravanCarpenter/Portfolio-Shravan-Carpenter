@@ -32,22 +32,42 @@ window.addEventListener('scroll', shadowHeader)
 const contactForm = document.getElementById('contact-form');
 const contactMessage = document.getElementById('contact-message');
 
-const sendEmail = (e) => {
-    e.preventDefault()
+document.getElementById('contact-form').addEventListener('submit', async function(event) {
+    event.preventDefault();
 
-    emailjs.sendForm('service_ojynhsq','template_ek36lvc','#contact-form','q9iGmjVhJe8278NVN')
-    .then(() => {
-        contactMessage.textContent = 'Message sent successfully! ✅'
+    const form = event.target;
+    const formData = new FormData(form);
+    const object = {};
+    formData.forEach((value, key) => { object[key] = value });
+    const json = JSON.stringify(object);
 
-        setTimeout(() => {
-            contactMessage.textContent = ''
-        }, 5000)
+    const contactMessage = document.getElementById('contact-message');
 
-        contactForm.reset();
-    }, () => {
-        contactMessage.textContent = 'Message not sent (Service Error) ❌'
-    })
-}
+    try {
+        const response = await fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: json
+        });
+
+        if (response.ok) {
+            contactMessage.textContent = 'Message sent successfully! ✅';
+            contactMessage.style.color = 'green';
+            form.reset();
+        } else {
+            throw new Error('Something went wrong! ❌');
+        }
+    } catch (error) {
+        contactMessage.textContent = 'Something went wrong, Please try again. ❌';
+        contactMessage.style.color = 'red';
+    }
+
+    setTimeout(() => {
+        contactMessage.textContent = '';
+    }, 5000);
+});
 
 contactForm.addEventListener('submit', sendEmail)
 const scrollUp = () =>{
